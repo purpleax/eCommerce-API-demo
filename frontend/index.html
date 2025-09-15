@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Commerce Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>API Commerce Demo Store</h1>
+      <div id="user-info">
+        <span id="user-email">Guest</span>
+        <button id="logout-btn" class="secondary" hidden>Log out</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="auth" id="auth-section">
+        <div class="card">
+          <h2>Register</h2>
+          <form id="register-form">
+            <label>
+              Email
+              <input type="email" name="email" required />
+            </label>
+            <label>
+              Full name
+              <input type="text" name="full_name" />
+            </label>
+            <label>
+              Password
+              <input type="password" name="password" required minlength="6" />
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="is_admin" /> Register as admin
+            </label>
+            <button type="submit">Create account</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Login</h2>
+          <form id="login-form">
+            <label>
+              Email
+              <input type="email" name="email" required />
+            </label>
+            <label>
+              Password
+              <input type="password" name="password" required />
+            </label>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="product-section" class="card">
+        <div class="section-header">
+          <h2>Products</h2>
+          <button id="refresh-products" class="secondary">Refresh</button>
+        </div>
+        <div id="product-grid" class="grid"></div>
+      </section>
+
+      <section id="admin-section" class="card" hidden>
+        <h2>Admin Tools</h2>
+        <form id="product-form" class="form-grid">
+          <input type="hidden" name="product_id" />
+          <label>
+            Name
+            <input type="text" name="name" required />
+          </label>
+          <label>
+            Description
+            <textarea name="description" rows="3" required></textarea>
+          </label>
+          <label>
+            Price
+            <input type="number" name="price" step="0.01" required />
+          </label>
+          <label>
+            Inventory
+            <input type="number" name="inventory_count" min="0" required />
+          </label>
+          <label>
+            Image URL
+            <input type="url" name="image_url" />
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" name="is_active" checked /> Active
+          </label>
+          <div class="form-actions">
+            <button type="submit">Save Product</button>
+            <button type="button" id="reset-product" class="secondary">Clear</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="cart-section" class="card">
+        <div class="section-header">
+          <h2>Shopping Cart</h2>
+          <button id="refresh-cart" class="secondary">Refresh</button>
+        </div>
+        <div id="cart-items"></div>
+        <div id="cart-summary">
+          <span>Subtotal:</span>
+          <strong id="cart-subtotal">$0.00</strong>
+          <button id="checkout-btn" disabled>Place Order</button>
+        </div>
+      </section>
+
+      <section id="orders-section" class="card">
+        <div class="section-header">
+          <h2>Order History</h2>
+          <button id="refresh-orders" class="secondary">Refresh</button>
+        </div>
+        <div id="orders"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>API-first storefront demo. Every interaction is powered by API calls.</p>
+      <div id="message" role="status"></div>
+    </footer>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
