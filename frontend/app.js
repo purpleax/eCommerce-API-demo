@@ -331,8 +331,8 @@ registerForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const { data, formData } = formToJSON(registerForm);
   const payload = {
-    email: data.email,
-    full_name: data.full_name || null,
+    email: (data.email || '').trim(),
+    full_name: data.full_name ? data.full_name.trim() : null,
     password: data.password,
     is_admin: formData.get('is_admin') === 'on',
   };
@@ -353,7 +353,7 @@ loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const { data } = formToJSON(loginForm);
   const payload = {
-    email: data.email,
+    email: (data.email || '').trim(),
     password: data.password,
   };
   try {
@@ -385,11 +385,11 @@ productForm.addEventListener('submit', async (event) => {
   const { data, formData } = formToJSON(productForm);
   const productId = data.product_id || null;
   const payload = {
-    name: data.name,
-    description: data.description,
+    name: data.name ? data.name.trim() : '',
+    description: data.description ? data.description.trim() : '',
     price: Number(data.price),
     inventory_count: Number(data.inventory_count),
-    image_url: data.image_url || null,
+    image_url: data.image_url ? data.image_url.trim() : null,
     is_active: formData.get('is_active') === 'on',
   };
 
