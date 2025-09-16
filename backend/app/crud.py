@@ -84,9 +84,7 @@ def add_cart_item(
     product = get_product(db, payload.product_id)
     if not product or not product.is_active:
         raise ValueError("Product not found")
-    if product.inventory_count < payload.quantity:
-        raise ValueError("Insufficient inventory")
-    cart_item = (
+    existing_item = (
         db.query(models.CartItem)
         .filter(
             models.CartItem.user_id == user.id,
@@ -94,8 +92,12 @@ def add_cart_item(
         )
         .first()
     )
+    new_quantity = payload.quantity + (existing_item.quantity if existing_item else 0)
+    if product.inventory_count < new_quantity:
+        raise ValueError("Insufficient inventory")
+    cart_item = existing_item
     if cart_item:
-        cart_item.quantity += payload.quantity
+        cart_item.quantity = new_quantity
     else:
         cart_item = models.CartItem(
             user_id=user.id,

@@ -3,7 +3,7 @@ from typing import Any
 
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -92,7 +92,11 @@ def update_product(
     return crud.update_product(db, product, payload)
 
 
-@app.delete("/api/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete(
+    "/api/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
@@ -103,7 +107,7 @@ def delete_product(
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     crud.delete_product(db, product)
-    return None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.get("/api/cart", response_model=schemas.CartSummary)
@@ -143,7 +147,11 @@ def update_cart_item(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
-@app.delete("/api/cart/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete(
+    "/api/cart/items/{item_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 def delete_cart_item(
     item_id: int,
     current_user=Depends(get_current_user),
@@ -153,7 +161,7 @@ def delete_cart_item(
     if not cart_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart item not found")
     crud.delete_cart_item(db, cart_item)
-    return None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.post("/api/orders", response_model=schemas.OrderRead, status_code=status.HTTP_201_CREATED)
