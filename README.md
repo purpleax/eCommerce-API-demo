@@ -1,10 +1,10 @@
 # API-Driven Commerce Demo
 
-A self-contained ecommerce storefront for showcasing API discovery. The backend exposes a FastAPI-powered JSON API for authentication, product catalog, shopping cart, and order workflows. The frontend is a lightweight single-page site that invokes the API for every action.
+A self-contained ecommerce storefront for showcasing API discovery, themed as **Apex Motorsport Outfitters**. The backend exposes a FastAPI-powered JSON API for authentication, product catalog, shopping cart, and order workflows. The frontend is a lightweight single-page site that invokes the API for every action.
 
 ## Features
 - Token-based authentication with user registration and admin roles
-- Product catalog CRUD endpoints with sample inventory seeding
+- Product catalog CRUD endpoints with sample motorsport apparel and pit-lane gear
 - Persistent SQLite storage for users, products, carts, and orders
 - Shopping cart APIs supporting add/update/remove with stock validation
 - Order checkout flow that converts cart items into historical orders
@@ -81,6 +81,7 @@ All protected endpoints expect an `Authorization: Bearer <token>` header using t
 - SQLite database file: `backend/app.db`
 - SQLAlchemy models in `backend/app/models.py`
 - Demo seed data defined in `backend/app/seed_data.py`
+  - Includes a curated catalog of 12 motorsport apparel & gear items for demos
 
 Resetting the demo is as simple as deleting `backend/app.db`; the next startup will recreate and reseed the database.
 You can also call the admin-only endpoint `POST /api/admin/reset` to drop and reseed the database without filesystem access.

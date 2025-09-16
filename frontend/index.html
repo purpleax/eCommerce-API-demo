@@ -3,12 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>API Commerce Demo</title>
+    <title>Apex Motorsport Outfitters</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header>
-      <h1>API Commerce Demo Store</h1>
+      <div class="brand">
+        <h1>Apex Motorsport Outfitters</h1>
+        <p>Track-ready apparel and pit gear, refreshed by live APIs.</p>
+      </div>
       <div id="user-info">
         <span id="user-email">Guest</span>
         <button id="logout-btn" class="secondary" hidden>Log out</button>
@@ -56,7 +59,7 @@
 
       <section id="product-section" class="card">
         <div class="section-header">
-          <h2>Products</h2>
+          <h2>Featured Gear</h2>
           <button id="refresh-products" class="secondary">Refresh</button>
         </div>
         <div id="product-grid" class="grid"></div>
@@ -120,7 +123,7 @@
     </main>
 
     <footer>
-      <p>API-first storefront demo. Every interaction is powered by API calls.</p>
+      <p>Built for race teams and API discovery alike — Apex Motorsport Outfitters.</p>
       <div id="message" role="status"></div>
     </footer>
     <script src="app.js" type="module"></script>
