@@ -30,14 +30,17 @@ class APIClient:
 
     def request(self, method: str, path: str, **kwargs):
         headers = kwargs.pop("headers", {})
+        headers.setdefault("Accept", "application/json")
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
         response = self.session.request(method, self._url(path), headers=headers, timeout=15, **kwargs)
         response.raise_for_status()
         if response.status_code == 204:
             return None
-        if response.headers.get("content-type", "").startswith("application/json"):
+        try:
             return response.json()
+        except ValueError:
+            pass
         return response.text
 
     def register(self, email: str, password: str, full_name: str | None = None, *, is_admin: bool = False):
