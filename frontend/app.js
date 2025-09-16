@@ -19,6 +19,20 @@ const cartSubtotalEl = document.getElementById('cart-subtotal');
 const checkoutBtn = document.getElementById('checkout-btn');
 const ordersEl = document.getElementById('orders');
 
+function formToJSON(form) {
+  const data = {};
+  const formData = new FormData(form);
+  for (const [key, value] of formData.entries()) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      const current = data[key];
+      data[key] = Array.isArray(current) ? current.concat(value) : [current, value];
+    } else {
+      data[key] = value;
+    }
+  }
+  return { data, formData };
+}
+
 function setMessage(text, variant = 'info') {
   messageEl.textContent = text || '';
   messageEl.dataset.variant = variant;
@@ -315,9 +329,13 @@ function renderOrders() {
 const registerForm = document.getElementById('register-form');
 registerForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const formData = new FormData(registerForm);
-  const payload = Object.fromEntries(formData.entries());
-  payload.is_admin = formData.get('is_admin') === 'on';
+  const { data, formData } = formToJSON(registerForm);
+  const payload = {
+    email: data.email,
+    full_name: data.full_name || null,
+    password: data.password,
+    is_admin: formData.get('is_admin') === 'on',
+  };
   try {
     await apiRequest('/auth/register', {
       method: 'POST',
@@ -333,8 +351,11 @@ registerForm.addEventListener('submit', async (event) => {
 const loginForm = document.getElementById('login-form');
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const formData = new FormData(loginForm);
-  const payload = Object.fromEntries(formData.entries());
+  const { data } = formToJSON(loginForm);
+  const payload = {
+    email: data.email,
+    password: data.password,
+  };
   try {
     const token = await apiRequest('/auth/login', {
       method: 'POST',
@@ -361,13 +382,16 @@ const productForm = document.getElementById('product-form');
 productForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!state.user?.is_admin) return;
-  const formData = new FormData(productForm);
-  const payload = Object.fromEntries(formData.entries());
-  const productId = payload.product_id;
-  delete payload.product_id;
-  payload.is_active = formData.get('is_active') === 'on';
-  payload.price = Number(payload.price);
-  payload.inventory_count = Number(payload.inventory_count);
+  const { data, formData } = formToJSON(productForm);
+  const productId = data.product_id || null;
+  const payload = {
+    name: data.name,
+    description: data.description,
+    price: Number(data.price),
+    inventory_count: Number(data.inventory_count),
+    image_url: data.image_url || null,
+    is_active: formData.get('is_active') === 'on',
+  };
 
   const method = productId ? 'PUT' : 'POST';
   const endpoint = productId ? `/products/${productId}` : '/products';
