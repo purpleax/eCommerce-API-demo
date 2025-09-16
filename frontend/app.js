@@ -18,6 +18,7 @@ const cartItemsEl = document.getElementById('cart-items');
 const cartSubtotalEl = document.getElementById('cart-subtotal');
 const checkoutBtn = document.getElementById('checkout-btn');
 const ordersEl = document.getElementById('orders');
+const resetStoreBtn = document.getElementById('reset-store');
 
 function formToJSON(form) {
   const data = {};
@@ -423,6 +424,27 @@ function populateProductForm(product) {
 const resetProductBtn = document.getElementById('reset-product');
 resetProductBtn.addEventListener('click', () => {
   productForm.reset();
+});
+
+resetStoreBtn.addEventListener('click', async () => {
+  if (!state.user?.is_admin) return;
+  const confirmed = confirm(
+    'Reset store data to its seeded state? This will clear all carts and orders.'
+  );
+  if (!confirmed) return;
+  try {
+    resetStoreBtn.disabled = true;
+    const result = await apiRequest('/admin/reset', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+    setMessage(result?.detail || 'Store reset complete.');
+    await loadProfile();
+  } catch (error) {
+    setMessage(error.message, 'error');
+  } finally {
+    resetStoreBtn.disabled = false;
+  }
 });
 
 async function handleDeleteProduct(productId) {
