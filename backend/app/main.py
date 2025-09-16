@@ -27,6 +27,15 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def add_cache_control_header(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers.setdefault("Pragma", "no-cache")
+    response.headers.setdefault("Expires", "0")
+    return response
+
+
 @app.on_event("startup")
 def on_startup() -> None:
     init_db()
