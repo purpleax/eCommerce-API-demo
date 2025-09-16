@@ -41,6 +41,15 @@ docker run --rm -p 8000:8000 api-commerce-demo
 ```
 The container exposes the FastAPI app on port 8000 and serves the static frontend from `/`. Configure your CDN to forward `/api/*` to the container if desired.
 
+### Automated UAT Simulation
+Install the lightweight dependency once (`pip install requests`) and use the helper script to exercise the site end-to-end from a macOS (or any) terminal:
+
+```bash
+python3 scripts/uat_simulation.py --base-url http://localhost:8000/api --iterations 3 --users 3 --cart-actions 2
+```
+
+Flags let you control how many iterations, users (up to the three bundled accounts), how many cart additions occur before checking out, and optional delays between loops. Point `--base-url` at the externally reachable API when running against remote environments.
+
 ## API Overview
 The full OpenAPI definition lives at `backend/openapi.yaml` for importing into discovery tools. FastAPI also serves the live schema at `/openapi.json` when the app is running.
 
