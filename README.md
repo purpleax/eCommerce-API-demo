@@ -68,6 +68,7 @@ The full OpenAPI definition lives at `backend/openapi.yaml` for importing into d
 | `DELETE` | `/api/cart/items/{id}` | Remove cart item |
 | `POST` | `/api/orders` | Place order using current cart |
 | `GET` | `/api/orders` | List order history |
+| `POST` | `/api/admin/reset` | Reset and reseed the datastore (admin) |
 
 All protected endpoints expect an `Authorization: Bearer <token>` header using the token from `/api/auth/login`.
 
@@ -82,3 +83,4 @@ All protected endpoints expect an `Authorization: Bearer <token>` header using t
 - Demo seed data defined in `backend/app/seed_data.py`
 
 Resetting the demo is as simple as deleting `backend/app.db`; the next startup will recreate and reseed the database.
+You can also call the admin-only endpoint `POST /api/admin/reset` to drop and reseed the database without filesystem access.

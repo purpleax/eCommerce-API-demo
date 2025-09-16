@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from . import crud, schemas
 from .auth import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
-from .database import SessionLocal, init_db
+from .database import SessionLocal, init_db, reset_database
 from .dependencies import get_current_admin, get_current_user, get_db
 from .seed_data import seed
 
@@ -173,6 +173,21 @@ def list_orders(
     current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ) -> Any:
     return crud.list_orders(db, current_user)
+
+
+@app.post("/api/admin/reset", response_model=schemas.ResetResponse)
+def reset_store(
+    current_admin=Depends(get_current_admin), db: Session = Depends(get_db)
+) -> Any:
+    _ = current_admin
+    db.close()
+    reset_database()
+    session = SessionLocal()
+    try:
+        seed(session)
+    finally:
+        session.close()
+    return schemas.ResetResponse()
 
 
 if FRONTEND_DIR.exists():

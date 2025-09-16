@@ -11,6 +11,10 @@ class Token(BaseModel):
     expires_in: int
 
 
+class ResetResponse(BaseModel):
+    detail: str = "Database reset and reseeded"
+
+
 class TokenPayload(BaseModel):
     sub: str
     exp: int

@@ -26,3 +26,11 @@ def init_db() -> None:
     from . import models  # noqa: F401 - ensure models are imported
 
     Base.metadata.create_all(bind=engine)
+
+
+def reset_database() -> None:
+    """Drop and recreate all tables."""
+    from . import models  # noqa: F401 - ensure models are imported
+
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)

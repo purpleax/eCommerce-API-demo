@@ -259,6 +259,23 @@ paths:
           $ref: '#/components/responses/BadRequest'
         "401":
           $ref: '#/components/responses/Unauthorized'
+  /api/admin/reset:
+    post:
+      summary: Reset and reseed database
+      tags: [Administration]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Database recreated and demo data reseeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
 components:
   securitySchemes:
     bearerAuth:
@@ -315,6 +332,13 @@ components:
             - type: array
               items:
                 type: string
+    ResetResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: Database reset and reseeded
+      required: [detail]
     Token:
       type: object
       properties:
