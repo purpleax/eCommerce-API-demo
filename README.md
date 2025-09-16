@@ -5,8 +5,9 @@ A self-contained ecommerce storefront for showcasing API discovery, themed as **
 ## Features
 - Token-based authentication with user registration and admin roles
 - Product catalog CRUD endpoints with sample motorsport apparel and pit-lane gear
+- Admin console includes datastore reset and live user registry views
 - Persistent SQLite storage for users, products, carts, and orders
-- Shopping cart APIs supporting add/update/remove with stock validation
+- Shopping cart APIs supporting add/update/remove with live stock validation and checkout enforcement
 - Order checkout flow that converts cart items into historical orders
 - Vanilla JavaScript frontend that demonstrates API usage end-to-end
 - Docker image that serves both the API and static frontend from one container

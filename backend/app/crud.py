@@ -102,7 +102,7 @@ def add_cart_item(
     )
     new_quantity = payload.quantity + (existing_item.quantity if existing_item else 0)
     if product.inventory_count < new_quantity:
-        raise ValueError("Insufficient inventory")
+        raise ValueError(f"Only {product.inventory_count} left for {product.name}")
     cart_item = existing_item
     if cart_item:
         cart_item.quantity = new_quantity
@@ -123,7 +123,7 @@ def update_cart_item(
 ) -> models.CartItem:
     product = cart_item.product
     if product.inventory_count < payload.quantity:
-        raise ValueError("Insufficient inventory")
+        raise ValueError(f"Only {product.inventory_count} left for {product.name}")
     cart_item.quantity = payload.quantity
     db.add(cart_item)
     db.commit()
@@ -156,14 +156,17 @@ def create_order_from_cart(db: Session, user: models.User) -> models.Order:
     if not cart_items:
         raise ValueError("Cart is empty")
 
+    # Ensure inventory is sufficient for the entire cart before altering state
+    for item in cart_items:
+        if item.product.inventory_count < item.quantity:
+            raise ValueError(f"Insufficient inventory for {item.product.name}")
+
     total = calculate_cart_total(cart_items)
     order = models.Order(user_id=user.id, total_amount=total)
     db.add(order)
     db.flush()
 
     for item in cart_items:
-        if item.product.inventory_count < item.quantity:
-            raise ValueError("Insufficient inventory for order")
         item.product.inventory_count -= item.quantity
         order_item = models.OrderItem(
             order_id=order.id,

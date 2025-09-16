@@ -155,21 +155,23 @@ function renderProducts() {
   productGrid.innerHTML = '';
   state.products.forEach((product) => {
     const card = document.createElement('article');
-    card.className = 'product-card';
+    const stock = Number(product.inventory_count) || 0;
+    const soldOut = stock <= 0;
+    card.className = `product-card${soldOut ? ' sold-out' : ''}`;
     card.innerHTML = `
       ${product.image_url ? `<img src="${product.image_url}" alt="${product.name}" />` : ''}
       <h3>${product.name}</h3>
       <p>${product.description}</p>
       <div class="price">${formatCurrency(product.price)}</div>
-      <div>In stock: ${product.inventory_count}</div>
+      <div class="inventory">${soldOut ? '<span class="badge danger">Sold out</span>' : `In stock: ${stock}`}</div>
       <div class="card-actions"></div>
     `;
 
     const actions = card.querySelector('.card-actions');
     const addButton = document.createElement('button');
-    addButton.textContent = 'Add to cart';
+    addButton.textContent = soldOut ? 'Sold out' : 'Add to cart';
     addButton.addEventListener('click', () => handleAddToCart(product.id));
-    addButton.disabled = !state.user;
+    addButton.disabled = !state.user || soldOut;
     actions.appendChild(addButton);
 
     if (state.user?.is_admin) {
@@ -198,10 +200,11 @@ async function handleAddToCart(productId) {
       method: 'POST',
       body: JSON.stringify({ product_id: productId, quantity: 1 }),
     });
-    setMessage('Item added to cart.');
-    await loadCart();
+    setMessage('Item added to cart.', 'success');
+    await Promise.all([loadCart(), loadProducts()]);
   } catch (error) {
     setMessage(error.message, 'error');
+    await Promise.all([loadCart(), loadProducts()]);
   }
 }
 
@@ -263,18 +266,20 @@ cartItemsEl.addEventListener('click', async (event) => {
         method: 'PUT',
         body: JSON.stringify({ quantity }),
       });
-      setMessage('Cart updated.');
-      await loadCart();
+      setMessage('Cart updated.', 'success');
+      await Promise.all([loadCart(), loadProducts()]);
     } catch (error) {
       setMessage(error.message, 'error');
+      await Promise.all([loadCart(), loadProducts()]);
     }
   } else if (action === 'remove') {
     try {
       await apiRequest(`/cart/items/${itemId}`, { method: 'DELETE' });
-      setMessage('Item removed.');
-      await loadCart();
+      setMessage('Item removed.', 'success');
+      await Promise.all([loadCart(), loadProducts()]);
     } catch (error) {
       setMessage(error.message, 'error');
+      await Promise.all([loadCart(), loadProducts()]);
     }
   }
 });
@@ -283,10 +288,11 @@ checkoutBtn.addEventListener('click', async () => {
   if (!state.user) return;
   try {
     await apiRequest('/orders', { method: 'POST', body: JSON.stringify({}) });
-    setMessage('Order placed successfully.');
+    setMessage('Order placed successfully.', 'success');
     await Promise.all([loadCart(), loadOrders(), loadProducts()]);
   } catch (error) {
     setMessage(error.message, 'error');
+    await Promise.all([loadCart(), loadProducts()]);
   }
 });
 
@@ -387,8 +393,11 @@ registerForm.addEventListener('submit', async (event) => {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    setMessage('Registration successful. You can now log in.');
+    setMessage('Registration successful. You can now log in.', 'success');
     registerForm.reset();
+    if (state.user?.is_admin) {
+      loadAdminUsers();
+    }
   } catch (error) {
     setMessage(error.message, 'error');
   }
@@ -408,7 +417,7 @@ loginForm.addEventListener('submit', async (event) => {
       body: JSON.stringify(payload),
     });
     storeToken(token.access_token);
-    setMessage('Logged in successfully.');
+    setMessage('Logged in successfully.', 'success');
     loginForm.reset();
     await loadProfile();
   } catch (error) {
@@ -446,7 +455,7 @@ productForm.addEventListener('submit', async (event) => {
       method,
       body: JSON.stringify(payload),
     });
-    setMessage(productId ? 'Product updated.' : 'Product created.');
+    setMessage(productId ? 'Product updated.' : 'Product created.', 'success');
     productForm.reset();
     loadProducts();
   } catch (error) {
@@ -484,7 +493,7 @@ if (resetStoreBtn) {
         method: 'POST',
         body: JSON.stringify({}),
       });
-      setMessage(result?.detail || 'Store reset complete.');
+      setMessage(result?.detail || 'Store reset complete.', 'success');
       await loadProfile();
     } catch (error) {
       setMessage(error.message, 'error');
