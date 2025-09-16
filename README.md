@@ -32,7 +32,7 @@ A self-contained ecommerce storefront for showcasing API discovery. The backend 
    ```
 3. **Open the storefront** at [http://localhost:8000](http://localhost:8000). Login, browse products, and exercise the API-driven flows. The interactive docs are available at `/docs`.
 
-> The startup routine seeds three demo products and an admin account (`admin@example.com` / `admin123`). Change `SECRET_KEY` in `backend/app/auth.py` before deploying anywhere non-demo.
+> The startup routine seeds three demo products and an admin account (`admin@example.com` / `admin123`). Update the password by editing `ADMIN_PASSWORD` in `backend/app/seed_data.py`, and change `SECRET_KEY` in `backend/app/auth.py` before deploying anywhere non-demo.
 
 ## Docker Usage
 ```bash
