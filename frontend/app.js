@@ -1,4 +1,4 @@
-const API_BASE = window.API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE = window.API_BASE_URL || `${window.location.origin}/api`;
 
 const state = {
   token: localStorage.getItem('token') || null,
