@@ -69,6 +69,7 @@ The full OpenAPI definition lives at `backend/openapi.yaml` for importing into d
 | `POST` | `/api/orders` | Place order using current cart |
 | `GET` | `/api/orders` | List order history |
 | `POST` | `/api/admin/reset` | Reset and reseed the datastore (admin) |
+| `GET` | `/api/admin/users` | List registered users (admin) |
 
 All protected endpoints expect an `Authorization: Bearer <token>` header using the token from `/api/auth/login`.
 

@@ -6,6 +6,7 @@ const state = {
   products: [],
   cart: { items: [], subtotal: 0 },
   orders: [],
+  adminUsers: [],
 };
 
 const messageEl = document.getElementById('message');
@@ -19,6 +20,8 @@ const cartSubtotalEl = document.getElementById('cart-subtotal');
 const checkoutBtn = document.getElementById('checkout-btn');
 const ordersEl = document.getElementById('orders');
 const resetStoreBtn = document.getElementById('reset-store');
+const adminUsersListEl = document.getElementById('admin-users-list');
+const refreshUsersBtn = document.getElementById('refresh-users');
 
 function formToJSON(form) {
   const data = {};
@@ -118,8 +121,11 @@ function updateAuthUI() {
     checkoutBtn.disabled = state.cart.items.length === 0;
     if (state.user.is_admin) {
       adminSection.hidden = false;
+      loadAdminUsers();
     } else {
       adminSection.hidden = true;
+      state.adminUsers = [];
+      renderAdminUsers();
     }
   } else {
     userEmailEl.textContent = 'Guest';
@@ -130,6 +136,8 @@ function updateAuthUI() {
     state.cart = { items: [], subtotal: 0 };
     renderCart();
     renderOrders();
+    state.adminUsers = [];
+    renderAdminUsers();
   }
 }
 
@@ -327,6 +335,43 @@ function renderOrders() {
   });
 }
 
+async function loadAdminUsers() {
+  if (!state.user?.is_admin || !adminUsersListEl) return;
+  try {
+    const users = await apiRequest('/admin/users');
+    state.adminUsers = users;
+    renderAdminUsers();
+  } catch (error) {
+    setMessage(error.message, 'error');
+  }
+}
+
+function renderAdminUsers() {
+  if (!adminUsersListEl) return;
+  if (!state.adminUsers.length) {
+    adminUsersListEl.innerHTML = '<p class="muted">No users found.</p>';
+    return;
+  }
+  adminUsersListEl.innerHTML = state.adminUsers
+    .map((user) => {
+      const created = new Date(user.created_at).toLocaleString();
+      const name = user.full_name ? user.full_name : 'No name provided';
+      return `
+        <div class="user-card">
+          <div>
+            <strong>${name}</strong>
+            <span>${user.email}</span>
+          </div>
+          <div class="meta">
+            ${user.is_admin ? '<span class="badge">Admin</span>' : ''}
+            <time datetime="${user.created_at}">Joined ${created}</time>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
 const registerForm = document.getElementById('register-form');
 registerForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -467,6 +512,9 @@ async function handleDeleteProduct(productId) {
 document.getElementById('refresh-products').addEventListener('click', loadProducts);
 document.getElementById('refresh-cart').addEventListener('click', loadCart);
 document.getElementById('refresh-orders').addEventListener('click', loadOrders);
+if (refreshUsersBtn) {
+  refreshUsersBtn.addEventListener('click', loadAdminUsers);
+}
 
 // Bootstrap on load
 (async function bootstrap() {

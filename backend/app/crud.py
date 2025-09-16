@@ -12,6 +12,14 @@ def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
     return db.scalar(select(models.User).where(models.User.email == email))
 
 
+def list_users(db: Session) -> list[models.User]:
+    return (
+        db.query(models.User)
+        .order_by(models.User.created_at.desc())
+        .all()
+    )
+
+
 def create_user(db: Session, payload: schemas.UserCreate) -> models.User:
     hashed_password = auth.get_password_hash(payload.password)
     db_user = models.User(

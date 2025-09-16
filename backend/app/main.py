@@ -190,5 +190,11 @@ def reset_store(
     return schemas.ResetResponse()
 
 
+@app.get("/api/admin/users", response_model=list[schemas.UserRead])
+def admin_list_users(current_admin=Depends(get_current_admin), db: Session = Depends(get_db)) -> Any:
+    _ = current_admin
+    return crud.list_users(db)
+
+
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
