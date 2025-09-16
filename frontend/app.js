@@ -276,7 +276,7 @@ checkoutBtn.addEventListener('click', async () => {
   try {
     await apiRequest('/orders', { method: 'POST', body: JSON.stringify({}) });
     setMessage('Order placed successfully.');
-    await Promise.all([loadCart(), loadOrders()]);
+    await Promise.all([loadCart(), loadOrders(), loadProducts()]);
   } catch (error) {
     setMessage(error.message, 'error');
   }
