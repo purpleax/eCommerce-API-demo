@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    image: api-commerce-demo:latest
+    container_name: api-commerce-demo
+    ports:
+      - "8000:8000"
+    restart: unless-stopped

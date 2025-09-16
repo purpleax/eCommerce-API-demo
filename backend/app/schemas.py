@@ -27,7 +27,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=6)
-    is_admin: bool = False
 
 
 class UserLogin(BaseModel):
@@ -42,6 +41,10 @@ class UserRead(UserBase):
 
     class Config:
         orm_mode = True
+
+
+class AdminUserUpdate(BaseModel):
+    is_admin: bool
 
 
 class ProductBase(BaseModel):

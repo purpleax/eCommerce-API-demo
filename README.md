@@ -5,7 +5,7 @@ A self-contained ecommerce storefront for showcasing API discovery, themed as **
 ## Features
 - Token-based authentication with user registration and admin roles
 - Product catalog CRUD endpoints with sample motorsport apparel and pit-lane gear
-- Admin console includes datastore reset and live user registry views
+- Admin console includes datastore reset, user promotion controls, and live user registry views
 - Persistent SQLite storage for users, products, carts, and orders
 - Shopping cart APIs supporting add/update/remove with live stock validation and checkout enforcement
 - Order checkout flow that converts cart items into historical orders
@@ -33,7 +33,7 @@ A self-contained ecommerce storefront for showcasing API discovery, themed as **
    ```
 3. **Open the storefront** at [http://localhost:8000](http://localhost:8000). Login, browse products, and exercise the API-driven flows. The interactive docs are available at `/docs`.
 
-> The startup routine seeds three demo products and an admin account (`admin@example.com` / `admin123`). Update the password by editing `ADMIN_PASSWORD` in `backend/app/seed_data.py`, and change `SECRET_KEY` in `backend/app/auth.py` before deploying anywhere non-demo.
+> The startup routine seeds three demo products and an admin account (`admin@example.com` / `admin123`). Update the password by editing `ADMIN_PASSWORD` in `backend/app/seed_data.py`, and change `SECRET_KEY` in `backend/app/auth.py` before deploying anywhere non-demo. All self-registered accounts start as shoppers; promote them from the Admin Tools panel when needed.
 
 ## Docker Usage
 ```bash
@@ -41,6 +41,12 @@ docker build -t api-commerce-demo .
 docker run --rm -p 8000:8000 api-commerce-demo
 ```
 The container exposes the FastAPI app on port 8000 and serves the static frontend from `/`. Configure your CDN to forward `/api/*` to the container if desired.
+
+Or run with Docker Compose:
+
+```bash
+docker compose up --build
+```
 
 ### Automated UAT Simulation
 Install the lightweight dependency once (`pip install requests`) and use the helper script to exercise the site end-to-end from a macOS (or any) terminal:

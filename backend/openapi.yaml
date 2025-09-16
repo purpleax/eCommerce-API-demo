@@ -295,6 +295,32 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "403":
           $ref: '#/components/responses/Forbidden'
+    patch:
+      summary: Update user admin status
+      tags: [Administration]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserUpdate'
+      responses:
+        "200":
+          description: Updated user record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRead'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     bearerAuth:
@@ -388,9 +414,6 @@ components:
               type: string
               format: password
               minLength: 6
-            is_admin:
-              type: boolean
-              default: false
           required: [password]
       required: [email]
     UserLogin:
@@ -416,6 +439,12 @@ components:
               type: string
               format: date-time
           required: [id, email, is_admin, created_at]
+    AdminUserUpdate:
+      type: object
+      properties:
+        is_admin:
+          type: boolean
+      required: [is_admin]
     ProductBase:
       type: object
       properties:

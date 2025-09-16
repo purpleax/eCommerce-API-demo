@@ -190,6 +190,32 @@ def reset_store(
     return schemas.ResetResponse()
 
 
+@app.patch("/api/admin/users/{user_id}", response_model=schemas.UserRead)
+def update_user_admin_status(
+    user_id: int,
+    payload: schemas.AdminUserUpdate,
+    current_admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+) -> Any:
+    _ = current_admin
+    user = crud.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user.id == current_admin.id and not payload.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot remove your own admin access",
+        )
+    if user.is_admin and not payload.is_admin:
+        remaining = crud.count_admins(db)
+        if remaining <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least one admin account must remain",
+            )
+    return crud.set_user_admin_status(db, user, payload.is_admin)
+
+
 @app.get("/api/admin/users", response_model=list[schemas.UserRead])
 def admin_list_users(current_admin=Depends(get_current_admin), db: Session = Depends(get_db)) -> Any:
     _ = current_admin

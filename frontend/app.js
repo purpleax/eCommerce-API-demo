@@ -362,8 +362,10 @@ function renderAdminUsers() {
     .map((user) => {
       const created = new Date(user.created_at).toLocaleString();
       const name = user.full_name ? user.full_name : 'No name provided';
+      const actionLabel = user.is_admin ? 'Remove admin' : 'Make admin';
+      const action = user.is_admin ? 'demote' : 'promote';
       return `
-        <div class="user-card">
+        <div class="user-card" data-user-id="${user.id}">
           <div>
             <strong>${name}</strong>
             <span>${user.email}</span>
@@ -371,6 +373,7 @@ function renderAdminUsers() {
           <div class="meta">
             ${user.is_admin ? '<span class="badge">Admin</span>' : ''}
             <time datetime="${user.created_at}">Joined ${created}</time>
+            <button type="button" class="secondary" data-action="${action}">${actionLabel}</button>
           </div>
         </div>
       `;
@@ -381,12 +384,11 @@ function renderAdminUsers() {
 const registerForm = document.getElementById('register-form');
 registerForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const { data, formData } = formToJSON(registerForm);
+  const { data } = formToJSON(registerForm);
   const payload = {
     email: (data.email || '').trim(),
     full_name: data.full_name ? data.full_name.trim() : null,
     password: data.password,
-    is_admin: formData.get('is_admin') === 'on',
   };
   try {
     await apiRequest('/auth/register', {
@@ -523,6 +525,31 @@ document.getElementById('refresh-cart').addEventListener('click', loadCart);
 document.getElementById('refresh-orders').addEventListener('click', loadOrders);
 if (refreshUsersBtn) {
   refreshUsersBtn.addEventListener('click', loadAdminUsers);
+}
+if (adminUsersListEl) {
+  adminUsersListEl.addEventListener('click', async (event) => {
+    const { action } = event.target.dataset;
+    if (!action) return;
+    const card = event.target.closest('.user-card');
+    if (!card) return;
+    const userId = Number(card.dataset.userId);
+    if (!Number.isInteger(userId)) return;
+    if (action === 'demote' && state.user && state.user.id === userId) {
+      setMessage('You cannot remove your own admin access.', 'error');
+      return;
+    }
+    const isAdmin = action === 'promote';
+    try {
+      await apiRequest(`/admin/users/${userId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_admin: isAdmin }),
+      });
+      setMessage(isAdmin ? 'User promoted to admin.' : 'Admin access removed.', 'success');
+      await loadAdminUsers();
+    } catch (error) {
+      setMessage(error.message, 'error');
+    }
+  });
 }
 
 // Bootstrap on load

@@ -12,6 +12,10 @@ def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
     return db.scalar(select(models.User).where(models.User.email == email))
 
 
+def get_user(db: Session, user_id: int) -> Optional[models.User]:
+    return db.get(models.User, user_id)
+
+
 def list_users(db: Session) -> list[models.User]:
     return (
         db.query(models.User)
@@ -20,13 +24,17 @@ def list_users(db: Session) -> list[models.User]:
     )
 
 
+def count_admins(db: Session) -> int:
+    return db.query(models.User).filter(models.User.is_admin == True).count()  # noqa: E712
+
+
 def create_user(db: Session, payload: schemas.UserCreate) -> models.User:
     hashed_password = auth.get_password_hash(payload.password)
     db_user = models.User(
         email=payload.email,
         full_name=payload.full_name,
         hashed_password=hashed_password,
-        is_admin=payload.is_admin,
+        is_admin=False,
     )
     db.add(db_user)
     try:
@@ -189,3 +197,11 @@ def list_orders(db: Session, user: models.User) -> list[models.Order]:
         .order_by(models.Order.created_at.desc())
         .all()
     )
+
+
+def set_user_admin_status(db: Session, user: models.User, is_admin: bool) -> models.User:
+    user.is_admin = is_admin
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
