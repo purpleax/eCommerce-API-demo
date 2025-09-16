@@ -92,11 +92,7 @@ def update_product(
     return crud.update_product(db, product, payload)
 
 
-@app.delete(
-    "/api/products/{product_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    response_class=Response,
-)
+@app.delete("/api/products/{product_id}", response_class=Response)
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
@@ -147,11 +143,7 @@ def update_cart_item(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
-@app.delete(
-    "/api/cart/items/{item_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    response_class=Response,
-)
+@app.delete("/api/cart/items/{item_id}", response_class=Response)
 def delete_cart_item(
     item_id: int,
     current_user=Depends(get_current_user),
