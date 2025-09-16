@@ -86,6 +86,42 @@ section.card {
   display: grid;
   gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+}
+
+.auth .card {
+  background: rgba(15, 18, 32, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px -25px rgba(8, 9, 18, 0.9);
+  max-width: 340px;
+}
+
+.auth .card h2 {
+  font-size: 1.15rem;
+  margin: 0 0 1rem;
+  letter-spacing: 0.03em;
+}
+
+.auth .card label {
+  font-size: 0.82rem;
+}
+
+.auth .card input,
+.auth .card button {
+  font-size: 0.9rem;
+}
+
+.auth .card button {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  text-transform: none;
+  font-weight: 600;
+}
+
+.auth .card button.secondary {
+  background: rgba(148, 163, 184, 0.14);
 }
 
 .card form {
