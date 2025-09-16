@@ -42,6 +42,8 @@ docker run --rm -p 8000:8000 api-commerce-demo
 The container exposes the FastAPI app on port 8000 and serves the static frontend from `/`. Configure your CDN to forward `/api/*` to the container if desired.
 
 ## API Overview
+The full OpenAPI definition lives at `backend/openapi.yaml` for importing into discovery tools. FastAPI also serves the live schema at `/openapi.json` when the app is running.
+
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
 | `POST` | `/api/auth/register` | Create a user account (optionally admin) |
