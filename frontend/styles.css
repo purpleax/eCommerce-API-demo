@@ -1,15 +1,15 @@
 :root {
   font-family: 'Barlow', 'Montserrat', 'Segoe UI', Tahoma, sans-serif;
-  --bg: #07080f;
-  --bg-secondary: #0f111a;
-  --card: rgba(15, 18, 32, 0.92);
-  --card-border: rgba(255, 255, 255, 0.05);
-  --text: #f8fafc;
-  --muted: #a3a8b8;
-  --accent: #ff2740;
-  --accent-soft: rgba(255, 39, 64, 0.15);
-  --accent-hover: #ff4158;
-  --success: #34d399;
+  --bg: #0b1220;
+  --bg-secondary: #101a2d;
+  --card: rgba(16, 26, 45, 0.92);
+  --card-border: rgba(100, 126, 170, 0.18);
+  --text: #e6f1ff;
+  --muted: #9aa8c2;
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.18);
+  --accent-hover: #60a5fa;
+  --success: #22d3ee;
   --error: #f87171;
 }
 
@@ -22,8 +22,8 @@ body {
   min-height: 100vh;
   color: var(--text);
   background:
-    radial-gradient(circle at 0% 0%, rgba(255, 39, 64, 0.22), transparent 55%),
-    radial-gradient(circle at 100% 15%, rgba(255, 255, 255, 0.08), transparent 45%),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.28), transparent 55%),
+    radial-gradient(circle at 100% 15%, rgba(34, 211, 238, 0.12), transparent 45%),
     var(--bg);
   padding: 0 1.5rem 3rem;
 }
