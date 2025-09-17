@@ -8,6 +8,7 @@ import sys
 import time
 from dataclasses import dataclass
 from typing import Iterable
+from urllib.parse import urlparse, urlunparse
 
 import requests
 
@@ -26,7 +27,9 @@ class APIClient:
     token: str | None = None
 
     def _url(self, path: str) -> str:
-        return f"{self.base_url.rstrip('/')}{path}"
+        base = self.base_url.rstrip('/')
+        suffix = path if path.startswith('/') else f"/{path}"
+        return f"{base}{suffix}"
 
     def request(self, method: str, path: str, **kwargs):
         headers = kwargs.pop("headers", {})
@@ -108,7 +111,7 @@ def simulate_user(client: APIClient, email: str, password: str, full_name: str |
 
 def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simulate user flows against the API commerce demo")
-    parser.add_argument("--base-url", default="http://localhost:8000/api", help="Base API URL")
+    parser.add_argument("--base-url", default="http://shop.fastlylab.com/api", help="Base API URL")
     parser.add_argument("--iterations", type=int, default=1, help="Number of simulation loops to run")
     parser.add_argument("--users", type=int, default=3, help="Number of users to simulate (1-3)")
     parser.add_argument("--cart-actions", type=int, default=2, help="Number of items each user adds before checkout")
@@ -116,8 +119,23 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     return parser.parse_args(list(argv))
 
 
+def normalize_base_url(url: str) -> str:
+    """Ensure the base URL includes an API path segment."""
+    parsed = urlparse(url)
+    path = parsed.path.rstrip("/")
+    if not path or path == "":
+        path = "/api"
+    elif path == "/":
+        path = "/api"
+    elif not path.startswith("/"):
+        path = f"/{path}"
+    normalized = parsed._replace(path=path)
+    return urlunparse(normalized)
+
+
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
+    args.base_url = normalize_base_url(args.base_url)
     users = DEFAULT_USERS[: max(1, min(args.users, len(DEFAULT_USERS)))]
     for iteration in range(1, args.iterations + 1):
         print(f"\nIteration {iteration}/{args.iterations}")

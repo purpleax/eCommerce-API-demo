@@ -313,32 +313,47 @@ function renderOrders() {
     ordersEl.innerHTML = '<p>No orders yet.</p>';
     return;
   }
-  state.orders.forEach((order) => {
-    const card = document.createElement('article');
-    card.className = 'order-card';
-    card.innerHTML = `
-      <header class="section-header">
-        <div>
-          <h3>Order #${order.id}</h3>
-          <p>${new Date(order.created_at).toLocaleString()}</p>
+  const historyCard = document.createElement('article');
+  historyCard.className = 'order-card order-history';
+
+  const rows = state.orders
+    .map((order) => {
+      const items = order.items
+        .map((item) => {
+          const unit = Number(item.unit_price);
+          const lineTotal = Number.isFinite(unit) ? unit * item.quantity : unit;
+          return `
+            <div class="order-history__item">
+              <span class="order-history__item-name">${item.product.name}</span>
+              <span class="order-history__item-meta">× ${item.quantity}</span>
+              <span class="order-history__item-meta">${formatCurrency(lineTotal)}</span>
+            </div>
+          `;
+        })
+        .join('');
+      return `
+        <div class="order-history__row">
+          <div class="order-history__order">
+            <strong>#${order.id}</strong>
+            <div class="order-history__items">${items}</div>
+          </div>
+          <div class="order-history__date">${new Date(order.created_at).toLocaleString()}</div>
+          <div class="order-history__total">${formatCurrency(order.total_amount)}</div>
         </div>
-        <strong>${formatCurrency(order.total_amount)}</strong>
-      </header>
-      <div class="order-items">
-        ${order.items
-          .map(
-            (item) => `
-              <div>
-                ${item.product.name} &times; ${item.quantity}
-                <span>(${formatCurrency(item.unit_price)})</span>
-              </div>
-            `,
-          )
-          .join('')}
-      </div>
-    `;
-    ordersEl.appendChild(card);
-  });
+      `;
+    })
+    .join('');
+
+  historyCard.innerHTML = `
+    <div class="order-history__header">
+      <span>Order</span>
+      <span>Placed</span>
+      <span class="amount">Total</span>
+    </div>
+    <div class="order-history__body">${rows}</div>
+  `;
+
+  ordersEl.appendChild(historyCard);
 }
 
 async function loadAdminUsers() {
