@@ -104,14 +104,15 @@ def simulate_user(client: APIClient, email: str, password: str, full_name: str |
                 continue
             raise
     cart = client.view_cart()
-    print(f"Cart for {email}: {len(cart['items'])} items, subtotal {cart['subtotal']}")
+    total_quantity = sum(item.get("quantity", 0) for item in cart.get("items", []))
+    print(f"Cart for {email}: {total_quantity} items, subtotal {cart['subtotal']}")
     order = client.checkout()
     print(f"Placed order {order['id']} with total {order['total_amount']}")
 
 
 def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simulate user flows against the API commerce demo")
-    parser.add_argument("--base-url", default="http://shop.fastlylab.com/api", help="Base API URL")
+    parser.add_argument("--base-url", default="http://shop.exampledomain.com/api", help="Base API URL")
     parser.add_argument("--iterations", type=int, default=1, help="Number of simulation loops to run")
     parser.add_argument("--users", type=int, default=3, help="Number of users to simulate (1-3)")
     parser.add_argument("--cart-actions", type=int, default=2, help="Number of items each user adds before checkout")
