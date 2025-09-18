@@ -7,7 +7,7 @@ import random
 import sys
 import time
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Tuple
 from urllib.parse import urlparse, urlunparse
 
 import requests
@@ -77,32 +77,103 @@ class APIClient:
         return self.request("POST", "/orders", json={})
 
 
-def simulate_user(client: APIClient, email: str, password: str, full_name: str | None, *, cart_actions: int) -> None:
+def _positive_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"Expected a positive integer, got '{value}'") from exc
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("Value must be at least 1")
+    return parsed
+
+
+def _quantity_override_arg(value: str) -> Tuple[str, int]:
+    if "=" not in value:
+        raise argparse.ArgumentTypeError("Expected KEY=QTY format for --product-quantity")
+    key, qty_text = value.split("=", 1)
+    key = key.strip()
+    if not key:
+        raise argparse.ArgumentTypeError("Quantity override key must not be empty")
+    try:
+        quantity = int(qty_text)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"Invalid quantity '{qty_text}' for {key}") from exc
+    if quantity < 1:
+        raise argparse.ArgumentTypeError("Quantity overrides must be at least 1")
+    return key, quantity
+
+
+def simulate_user(
+    client: APIClient,
+    email: str,
+    password: str,
+    full_name: str | None,
+    *,
+    cart_actions: int,
+    purchase_mode: str,
+    default_product_quantity: int,
+    quantity_overrides: dict[str, int],
+) -> None:
     client.register(email, password, full_name)
     client.login(email, password)
     products = client.list_products()
     available = [p for p in products if int(p.get("inventory_count", 0) or 0) > 0]
     if not available:
         raise RuntimeError("No products with inventory available for cart simulation")
-    for _ in range(cart_actions):
-        product = random.choice(available)
-        max_qty = int(product.get("inventory_count", 1) or 1)
-        quantity = random.randint(1, min(2, max_qty))
-        try:
-            client.add_to_cart(product_id=product["id"], quantity=quantity)
-            product["inventory_count"] = max(int(product.get("inventory_count", 0)) - quantity, 0)
-            if int(product["inventory_count"]) <= 0:
-                available = [p for p in available if p.get("id") != product["id"]]
-                if not available:
-                    break
-        except requests.HTTPError as exc:
-            if exc.response is not None and exc.response.status_code == 400:
-                print(f"  Skipping product {product['name']}: {exc.response.json().get('detail')}")
-                available = [p for p in client.list_products() if int(p.get("inventory_count", 0) or 0) > 0]
-                if not available:
-                    break
+    if purchase_mode == "all":
+        overrides_by_id: dict[int, int] = {}
+        overrides_by_name: dict[str, int] = {}
+        for key, quantity in quantity_overrides.items():
+            if key.isdigit():
+                overrides_by_id[int(key)] = quantity
+            else:
+                overrides_by_name[key.lower()] = quantity
+        for product in available:
+            product_id = product.get("id")
+            available_inventory = int(product.get("inventory_count", 0) or 0)
+            if available_inventory <= 0:
                 continue
-            raise
+            quantity = None
+            if isinstance(product_id, int) and product_id in overrides_by_id:
+                quantity = overrides_by_id[product_id]
+            else:
+                name = str(product.get("name", ""))
+                if name and name.lower() in overrides_by_name:
+                    quantity = overrides_by_name[name.lower()]
+            if quantity is None:
+                quantity = default_product_quantity
+            if quantity <= 0:
+                continue
+            if quantity > available_inventory:
+                quantity = available_inventory
+            try:
+                client.add_to_cart(product_id=product_id, quantity=quantity)
+            except requests.HTTPError as exc:
+                if exc.response is not None and exc.response.status_code == 400:
+                    error_detail = exc.response.json().get("detail")
+                    print(f"  Skipping product {product.get('name', product_id)}: {error_detail}")
+                    continue
+                raise
+    else:
+        for _ in range(cart_actions):
+            product = random.choice(available)
+            max_qty = int(product.get("inventory_count", 1) or 1)
+            quantity = random.randint(1, min(2, max_qty))
+            try:
+                client.add_to_cart(product_id=product["id"], quantity=quantity)
+                product["inventory_count"] = max(int(product.get("inventory_count", 0)) - quantity, 0)
+                if int(product["inventory_count"]) <= 0:
+                    available = [p for p in available if p.get("id") != product["id"]]
+                    if not available:
+                        break
+            except requests.HTTPError as exc:
+                if exc.response is not None and exc.response.status_code == 400:
+                    print(f"  Skipping product {product['name']}: {exc.response.json().get('detail')}")
+                    available = [p for p in client.list_products() if int(p.get("inventory_count", 0) or 0) > 0]
+                    if not available:
+                        break
+                    continue
+                raise
     cart = client.view_cart()
     total_quantity = sum(item.get("quantity", 0) for item in cart.get("items", []))
     print(f"Cart for {email}: {total_quantity} items, subtotal {cart['subtotal']}")
@@ -115,7 +186,27 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     parser.add_argument("--base-url", default="http://shop.exampledomain.com/api", help="Base API URL")
     parser.add_argument("--iterations", type=int, default=1, help="Number of simulation loops to run")
     parser.add_argument("--users", type=int, default=3, help="Number of users to simulate (1-3)")
-    parser.add_argument("--cart-actions", type=int, default=2, help="Number of items each user adds before checkout")
+    parser.add_argument("--cart-actions", type=int, default=2, help="Number of items each user adds before checkout in random mode")
+    parser.add_argument(
+        "--purchase-mode",
+        choices=("random", "all"),
+        default="random",
+        help="random: add items randomly (default); all: add every available product",
+    )
+    parser.add_argument(
+        "--default-product-quantity",
+        type=_positive_int,
+        default=1,
+        help="Quantity to add for each product when using purchase-mode=all",
+    )
+    parser.add_argument(
+        "--product-quantity",
+        dest="product_quantities",
+        action="append",
+        type=_quantity_override_arg,
+        metavar="KEY=QTY",
+        help="Override quantity for a product in purchase-mode=all using product id or name",
+    )
     parser.add_argument("--delay", type=float, default=0.0, help="Delay between iterations in seconds")
     return parser.parse_args(list(argv))
 
@@ -144,7 +235,16 @@ def main(argv: Iterable[str] | None = None) -> int:
             session = requests.Session()
             client = APIClient(base_url=args.base_url, session=session)
             try:
-                simulate_user(client, user["email"], user["password"], user.get("full_name"), cart_actions=args.cart_actions)
+                simulate_user(
+                    client,
+                    user["email"],
+                    user["password"],
+                    user.get("full_name"),
+                    cart_actions=args.cart_actions,
+                    purchase_mode=args.purchase_mode,
+                    default_product_quantity=args.default_product_quantity,
+                    quantity_overrides={key: qty for key, qty in args.product_quantities or []},
+                )
             except Exception as exc:  # broad catch for UAT logging
                 print(f"User {user['email']} flow failed: {exc}")
             finally:

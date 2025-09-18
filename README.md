@@ -49,13 +49,37 @@ docker compose up --build
 ```
 
 ### Automated UAT Simulation
-Install the lightweight dependency once (`pip install requests`) and use the helper script to exercise the site end-to-end from a macOS (or any) terminal:
+Install the lightweight dependency once (`pip install requests`) and use the helper script to exercise real API flows from any terminal:
 
 ```bash
 python3 scripts/uat_simulation.py --base-url http://localhost:8000/api --iterations 3 --users 3 --cart-actions 2
 ```
 
-Flags let you control how many iterations, users (up to the three bundled accounts), how many cart additions occur before checking out, and optional delays between loops. Point `--base-url` at the externally reachable API when running against remote environments.
+The script signs in with the bundled demo users, fills carts, and completes checkout to mimic real shoppers. Key options:
+
+| Flag | Default | Description |
+| ---- | ------- | ----------- |
+| `--base-url` | `http://shop.exampledomain.com/api` | Root API endpoint (include `/api`). Point this at your deployed environment when testing remotely. |
+| `--iterations` | `1` | Number of times to repeat the full simulation loop. Useful for burn-in smoke tests. |
+| `--users` | `3` | How many of the bundled accounts to exercise (`1-3`). |
+| `--delay` | `0.0` | Seconds to wait between iterations. |
+| `--cart-actions` | `2` | When paired with `--purchase-mode random`, controls how many random add-to-cart operations happen before checkout. |
+| `--purchase-mode` | `random` | `random` keeps the legacy behavior, picking random products per user. `all` adds every product that currently has inventory. |
+| `--default-product-quantity` | `1` | Baseline quantity to add for each item when `--purchase-mode all` is active. Must be a positive integer. |
+| `--product-quantity KEY=QTY` | _repeatable_ | Override the default quantity for a specific product in all-products mode. Use either the product id (`12=4`) or the exact name (`"carbon helmet"=2`). Repeat the flag for multiple overrides. |
+
+Example: add every product once, but buy four of product id `5` and three of the item named "Trackside Gloves":
+
+```bash
+python3 scripts/uat_simulation.py \
+  --base-url http://localhost:8000/api \
+  --purchase-mode all \
+  --default-product-quantity 1 \
+  --product-quantity 5=4 \
+  --product-quantity "Trackside Gloves"=3
+```
+
+The script automatically caps requested quantities at remaining inventory and logs any 400-level responses (such as insufficient stock) so you can spot issues quickly.
 
 ## API Overview
 The full OpenAPI definition lives at `backend/openapi.yaml` for importing into discovery tools. FastAPI also serves the live schema at `/openapi.json` when the app is running.
