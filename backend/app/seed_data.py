@@ -52,7 +52,7 @@ SAMPLE_PRODUCTS = [
         "description": "Max Verstappen 1:2 Scale Helmet",
         "price": 449.00,
         "inventory_count": 20,
-        "image_url": "https://picsum.photos/seed/sprint-suit/640/480",
+        "image_url": "https://i.ibb.co/8LfW8zWf/Verstappen.png",
     },
     {
         "name": "Mika Hakkinen Helmet",
