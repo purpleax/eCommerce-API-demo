@@ -10,7 +10,7 @@ SAMPLE_PRODUCTS = [
         "description": "1985 Ayrton Senna 1:2 Scale Helmet with box",
         "price": 199.00,
         "inventory_count": 15,
-        "image_url": "https://imgur.com/a/21Ir0Yk,
+        "image_url": "https://imgur.com/a/21Ir0Yk",
     },
     {
         "name": "Velocity GT Race Suit",
