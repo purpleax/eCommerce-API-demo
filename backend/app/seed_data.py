@@ -6,11 +6,11 @@ from .auth import get_password_hash
 
 SAMPLE_PRODUCTS = [
     {
-        "name": "Apex Carbon Fiber Helmet",
-        "description": "FIA 8860 certified shell with multi-density foam for maximum impact protection and airflow.",
+        "name": "Ayrton Senna Helmet",
+        "description": "1985 Ayrton Senna 1:2 Scale Helmet with box",
         "price": 799.00,
         "inventory_count": 15,
-        "image_url": "https://picsum.photos/seed/apex-helmet/640/480",
+        "image_url": "https://imgur.com/a/21Ir0Yk,
     },
     {
         "name": "Velocity GT Race Suit",
