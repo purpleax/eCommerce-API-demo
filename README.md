@@ -40,7 +40,7 @@ A self-contained ecommerce storefront for showcasing API discovery, themed as **
 docker build -t api-commerce-demo .
 docker run --rm -p 8000:8000 api-commerce-demo
 ```
-The container exposes the FastAPI app on port 8000 and serves the static frontend from `/`. Configure your CDN to forward `/api/*` to the container if desired.
+The container exposes the FastAPI app on port 8000 and serves the static frontend from `/`. Configure your CDN to forward `/api/v1/*` to the container if desired.
 
 Or run with Docker Compose:
 
@@ -52,14 +52,14 @@ docker compose up --build
 Install the lightweight dependency once (`pip install requests`) and use the helper script to exercise real API flows from any terminal:
 
 ```bash
-python3 scripts/uat_simulation.py --base-url http://localhost:8000/api --iterations 3 --users 3 --cart-actions 2
+python3 scripts/uat_simulation.py --base-url http://localhost:8000/api/v1 --iterations 3 --users 3 --cart-actions 2
 ```
 
 The script signs in with the bundled demo users, fills carts, and completes checkout to mimic real shoppers. Key options:
 
 | Flag | Default | Description |
 | ---- | ------- | ----------- |
-| `--base-url` | `http://shop.exampledomain.com/api` | Root API endpoint (include `/api`). Point this at your deployed environment when testing remotely. |
+| `--base-url` | `http://shop.exampledomain.com/api/v1` | Root API endpoint (include `/api/v1`). Point this at your deployed environment when testing remotely. |
 | `--iterations` | `1` | Number of times to repeat the full simulation loop. Useful for burn-in smoke tests. |
 | `--users` | `3` | How many of the bundled accounts to exercise (`1-3`). |
 | `--delay` | `0.0` | Seconds to wait between iterations. |
@@ -72,7 +72,7 @@ Example: add every product once, but buy four of product id `5` and three of the
 
 ```bash
 python3 scripts/uat_simulation.py \
-  --base-url http://localhost:8000/api \
+  --base-url http://localhost:8000/api/v1 \
   --purchase-mode all \
   --default-product-quantity 1 \
   --product-quantity 5=4 \
@@ -86,23 +86,23 @@ The full OpenAPI definition lives at `backend/openapi.yaml` for importing into d
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
-| `POST` | `/api/auth/register` | Create a user account (optionally admin) |
-| `POST` | `/api/auth/login` | Obtain a bearer token using email/password |
-| `GET` | `/api/users/me` | Fetch the current profile |
-| `GET` | `/api/products` | List active products |
-| `POST` | `/api/products` | Create product (admin) |
-| `PUT` | `/api/products/{id}` | Update product (admin) |
-| `DELETE` | `/api/products/{id}` | Delete product (admin) |
-| `GET` | `/api/cart` | Retrieve cart summary for the current user |
-| `POST` | `/api/cart/items` | Add item to cart |
-| `PUT` | `/api/cart/items/{id}` | Update cart item quantity |
-| `DELETE` | `/api/cart/items/{id}` | Remove cart item |
-| `POST` | `/api/orders` | Place order using current cart |
-| `GET` | `/api/orders` | List order history |
-| `POST` | `/api/admin/reset` | Reset and reseed the datastore (admin) |
-| `GET` | `/api/admin/users` | List registered users (admin) |
+| `POST` | `/api/v1/auth/register` | Create a user account (optionally admin) |
+| `POST` | `/api/v1/auth/login` | Obtain a bearer token using email/password |
+| `GET` | `/api/v1/users/me` | Fetch the current profile |
+| `GET` | `/api/v1/products` | List active products |
+| `POST` | `/api/v1/products` | Create product (admin) |
+| `PUT` | `/api/v1/products/{id}` | Update product (admin) |
+| `DELETE` | `/api/v1/products/{id}` | Delete product (admin) |
+| `GET` | `/api/v1/cart` | Retrieve cart summary for the current user |
+| `POST` | `/api/v1/cart/items` | Add item to cart |
+| `PUT` | `/api/v1/cart/items/{id}` | Update cart item quantity |
+| `DELETE` | `/api/v1/cart/items/{id}` | Remove cart item |
+| `POST` | `/api/v1/orders` | Place order using current cart |
+| `GET` | `/api/v1/orders` | List order history |
+| `POST` | `/api/v1/admin/reset` | Reset and reseed the datastore (admin) |
+| `GET` | `/api/v1/admin/users` | List registered users (admin) |
 
-All protected endpoints expect an `Authorization: Bearer <token>` header using the token from `/api/auth/login`.
+All protected endpoints expect an `Authorization: Bearer <token>` header using the token from `/api/v1/auth/login`.
 
 ## Frontend Notes
 - The static app lives in `frontend/` and is bundled into the FastAPI container via `StaticFiles`.
@@ -116,4 +116,4 @@ All protected endpoints expect an `Authorization: Bearer <token>` header using t
   - Includes a curated catalog of 12 motorsport apparel & gear items for demos
 
 Resetting the demo is as simple as deleting `backend/app.db`; the next startup will recreate and reseed the database.
-You can also call the admin-only endpoint `POST /api/admin/reset` to drop and reseed the database without filesystem access.
+You can also call the admin-only endpoint `POST /api/v1/admin/reset` to drop and reseed the database without filesystem access.

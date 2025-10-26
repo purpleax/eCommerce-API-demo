@@ -13,6 +13,9 @@ from urllib.parse import urlparse, urlunparse
 import requests
 
 
+API_BASE_PATH = "/api/v1"
+
+
 @dataclass
 class AdminClient:
     base_url: str
@@ -83,18 +86,20 @@ def normalize_base_url(url: str) -> str:
     parsed = urlparse(url)
     path = parsed.path.rstrip("/")
     if not path or path == "":
-        path = "/api"
+        path = API_BASE_PATH
     elif path == "/":
-        path = "/api"
+        path = API_BASE_PATH
     elif not path.startswith("/"):
         path = f"/{path}"
+    if path == "/api":
+        path = API_BASE_PATH
     normalized = parsed._replace(path=path)
     return urlunparse(normalized)
 
 
 def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Administrative tools for the commerce API")
-    parser.add_argument("--base-url", default="http://shop.exampledomain.com/api", help="Base API URL")
+    parser.add_argument("--base-url", default=f"http://shop.exampledomain.com{API_BASE_PATH}", help="Base API URL")
     return parser.parse_args(list(argv))
 
 

@@ -20,6 +20,7 @@ DEFAULT_USERS = [
     {"email": "user3@example.com", "password": "pass123", "full_name": "Demo User 3"},
 ]
 
+API_BASE_PATH = "/api/v1"
 
 DESKTOP_USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
@@ -259,7 +260,7 @@ def simulate_user(
 
 def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simulate user flows against the API commerce demo")
-    parser.add_argument("--base-url", default="http://shop.exampledomain.com/api", help="Base API URL")
+    parser.add_argument("--base-url", default=f"http://shop.exampledomain.com{API_BASE_PATH}", help="Base API URL")
     parser.add_argument("--iterations", type=int, default=1, help="Number of simulation loops to run")
     parser.add_argument("--users", type=int, default=3, help="Number of users to simulate (1-3)")
     parser.add_argument("--cart-actions", type=int, default=2, help="Number of items each user adds before checkout in random mode")
@@ -292,11 +293,13 @@ def normalize_base_url(url: str) -> str:
     parsed = urlparse(url)
     path = parsed.path.rstrip("/")
     if not path or path == "":
-        path = "/api"
+        path = API_BASE_PATH
     elif path == "/":
-        path = "/api"
+        path = API_BASE_PATH
     elif not path.startswith("/"):
         path = f"/{path}"
+    if path == "/api":
+        path = API_BASE_PATH
     normalized = parsed._replace(path=path)
     return urlunparse(normalized)
 

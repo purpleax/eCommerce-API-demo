@@ -1,4 +1,11 @@
-const API_BASE = window.API_BASE_URL || `${window.location.origin}/api`;
+const API_VERSION = 'v1';
+const API_BASE = (() => {
+  const explicitBase = window.API_BASE_URL ? window.API_BASE_URL.replace(/\/$/, '') : null;
+  if (explicitBase) {
+    return explicitBase;
+  }
+  return `${window.location.origin}/api/${API_VERSION}`;
+})();
 
 const state = {
   token: localStorage.getItem('token') || null,

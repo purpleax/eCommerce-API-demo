@@ -14,6 +14,8 @@ from .database import SessionLocal, init_db, reset_database
 from .dependencies import get_current_admin, get_current_user, get_db
 from .seed_data import seed
 
+API_PREFIX = "/api/v1"
+
 app = FastAPI(title="API-Driven Commerce Demo", version="1.0.0")
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
@@ -46,7 +48,7 @@ def on_startup() -> None:
         db.close()
 
 
-@app.post("/api/auth/register", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED)
+@app.post(f"{API_PREFIX}/auth/register", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED)
 def register_user(payload: schemas.UserCreate, db: Session = Depends(get_db)) -> Any:
     try:
         user = crud.create_user(db, payload)
@@ -55,7 +57,7 @@ def register_user(payload: schemas.UserCreate, db: Session = Depends(get_db)) ->
     return user
 
 
-@app.post("/api/auth/login", response_model=schemas.Token)
+@app.post(f"{API_PREFIX}/auth/login", response_model=schemas.Token)
 def login(payload: schemas.UserLogin, db: Session = Depends(get_db)) -> schemas.Token:
     user = crud.get_user_by_email(db, payload.email)
     if not user or not verify_password(payload.password, user.hashed_password):
@@ -67,17 +69,17 @@ def login(payload: schemas.UserLogin, db: Session = Depends(get_db)) -> schemas.
     return schemas.Token(access_token=access_token, expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60)
 
 
-@app.get("/api/users/me", response_model=schemas.UserRead)
+@app.get(f"{API_PREFIX}/users/me", response_model=schemas.UserRead)
 def get_me(current_user=Depends(get_current_user)) -> Any:
     return current_user
 
 
-@app.get("/api/products", response_model=list[schemas.ProductRead])
+@app.get(f"{API_PREFIX}/products", response_model=list[schemas.ProductRead])
 def list_products(db: Session = Depends(get_db)) -> Any:
     return crud.list_products(db)
 
 
-@app.post("/api/products", response_model=schemas.ProductRead, status_code=status.HTTP_201_CREATED)
+@app.post(f"{API_PREFIX}/products", response_model=schemas.ProductRead, status_code=status.HTTP_201_CREATED)
 def create_product(
     payload: schemas.ProductCreate,
     db: Session = Depends(get_db),
@@ -87,7 +89,7 @@ def create_product(
     return crud.create_product(db, payload)
 
 
-@app.put("/api/products/{product_id}", response_model=schemas.ProductRead)
+@app.put(f"{API_PREFIX}/products/{{product_id}}", response_model=schemas.ProductRead)
 def update_product(
     product_id: int,
     payload: schemas.ProductUpdate,
@@ -101,7 +103,7 @@ def update_product(
     return crud.update_product(db, product, payload)
 
 
-@app.delete("/api/products/{product_id}", response_class=Response)
+@app.delete(f"{API_PREFIX}/products/{{product_id}}", response_class=Response)
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
@@ -115,7 +117,7 @@ def delete_product(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.get("/api/cart", response_model=schemas.CartSummary)
+@app.get(f"{API_PREFIX}/cart", response_model=schemas.CartSummary)
 def get_cart(
     current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ) -> Any:
@@ -124,7 +126,7 @@ def get_cart(
     return schemas.CartSummary(items=items, subtotal=subtotal)
 
 
-@app.post("/api/cart/items", response_model=schemas.CartItemRead, status_code=status.HTTP_201_CREATED)
+@app.post(f"{API_PREFIX}/cart/items", response_model=schemas.CartItemRead, status_code=status.HTTP_201_CREATED)
 def add_to_cart(
     payload: schemas.CartItemCreate,
     current_user=Depends(get_current_user),
@@ -136,7 +138,7 @@ def add_to_cart(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
-@app.put("/api/cart/items/{item_id}", response_model=schemas.CartItemRead)
+@app.put(f"{API_PREFIX}/cart/items/{{item_id}}", response_model=schemas.CartItemRead)
 def update_cart_item(
     item_id: int,
     payload: schemas.CartItemUpdate,
@@ -152,7 +154,7 @@ def update_cart_item(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
-@app.delete("/api/cart/items/{item_id}", response_class=Response)
+@app.delete(f"{API_PREFIX}/cart/items/{{item_id}}", response_class=Response)
 def delete_cart_item(
     item_id: int,
     current_user=Depends(get_current_user),
@@ -165,7 +167,7 @@ def delete_cart_item(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.post("/api/orders", response_model=schemas.OrderRead, status_code=status.HTTP_201_CREATED)
+@app.post(f"{API_PREFIX}/orders", response_model=schemas.OrderRead, status_code=status.HTTP_201_CREATED)
 def create_order(
     _: schemas.OrderCreate,
     current_user=Depends(get_current_user),
@@ -177,14 +179,14 @@ def create_order(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
-@app.get("/api/orders", response_model=list[schemas.OrderRead])
+@app.get(f"{API_PREFIX}/orders", response_model=list[schemas.OrderRead])
 def list_orders(
     current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ) -> Any:
     return crud.list_orders(db, current_user)
 
 
-@app.post("/api/admin/reset", response_model=schemas.ResetResponse)
+@app.post(f"{API_PREFIX}/admin/reset", response_model=schemas.ResetResponse)
 def reset_store(
     current_admin=Depends(get_current_admin), db: Session = Depends(get_db)
 ) -> Any:
@@ -199,7 +201,7 @@ def reset_store(
     return schemas.ResetResponse()
 
 
-@app.patch("/api/admin/users/{user_id}", response_model=schemas.UserRead)
+@app.patch(f"{API_PREFIX}/admin/users/{{user_id}}", response_model=schemas.UserRead)
 def update_user_admin_status(
     user_id: int,
     payload: schemas.AdminUserUpdate,
@@ -225,7 +227,7 @@ def update_user_admin_status(
     return crud.set_user_admin_status(db, user, payload.is_admin)
 
 
-@app.get("/api/admin/users", response_model=list[schemas.UserRead])
+@app.get(f"{API_PREFIX}/admin/users", response_model=list[schemas.UserRead])
 def admin_list_users(current_admin=Depends(get_current_admin), db: Session = Depends(get_db)) -> Any:
     _ = current_admin
     return crud.list_users(db)

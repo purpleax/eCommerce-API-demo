@@ -12,7 +12,7 @@ servers:
       host:
         default: localhost:8000
 paths:
-  /api/auth/register:
+  /api/v1/auth/register:
     post:
       summary: Register user
       tags: [Authentication]
@@ -31,7 +31,7 @@ paths:
                 $ref: '#/components/schemas/UserRead'
         "400":
           $ref: '#/components/responses/BadRequest'
-  /api/auth/login:
+  /api/v1/auth/login:
     post:
       summary: Obtain access token
       tags: [Authentication]
@@ -50,7 +50,7 @@ paths:
                 $ref: '#/components/schemas/Token'
         "401":
           $ref: '#/components/responses/Unauthorized'
-  /api/users/me:
+  /api/v1/users/me:
     get:
       summary: Current user profile
       tags: [Users]
@@ -65,7 +65,7 @@ paths:
                 $ref: '#/components/schemas/UserRead'
         "401":
           $ref: '#/components/responses/Unauthorized'
-  /api/products:
+  /api/v1/products:
     get:
       summary: List products
       tags: [Products]
@@ -102,7 +102,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "403":
           $ref: '#/components/responses/Forbidden'
-  /api/products/{productId}:
+  /api/v1/products/{productId}:
     parameters:
       - $ref: '#/components/parameters/ProductId'
     put:
@@ -143,7 +143,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
-  /api/cart:
+  /api/v1/cart:
     get:
       summary: Get shopping cart
       tags: [Cart]
@@ -158,7 +158,7 @@ paths:
                 $ref: '#/components/schemas/CartSummary'
         "401":
           $ref: '#/components/responses/Unauthorized'
-  /api/cart/items:
+  /api/v1/cart/items:
     post:
       summary: Add item to cart
       tags: [Cart]
@@ -181,7 +181,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         "401":
           $ref: '#/components/responses/Unauthorized'
-  /api/cart/items/{itemId}:
+  /api/v1/cart/items/{itemId}:
     parameters:
       - $ref: '#/components/parameters/CartItemId'
     put:
@@ -220,7 +220,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "404":
           $ref: '#/components/responses/NotFound'
-  /api/orders:
+  /api/v1/orders:
     get:
       summary: List orders
       tags: [Orders]
@@ -259,7 +259,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         "401":
           $ref: '#/components/responses/Unauthorized'
-  /api/admin/reset:
+  /api/v1/admin/reset:
     post:
       summary: Reset and reseed database
       tags: [Administration]
@@ -276,7 +276,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "403":
           $ref: '#/components/responses/Forbidden'
-  /api/admin/users:
+  /api/v1/admin/users:
     get:
       summary: List registered users
       tags: [Administration]
