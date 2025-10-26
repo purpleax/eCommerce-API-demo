@@ -6,9 +6,10 @@ import argparse
 import random
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterable, Tuple
 from urllib.parse import urlparse, urlunparse
+from uuid import uuid4
 
 import requests
 
@@ -20,10 +21,38 @@ DEFAULT_USERS = [
 ]
 
 
+DESKTOP_USER_AGENTS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0",
+]
+
+MOBILE_USER_AGENTS = [
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
+]
+
+LANGUAGE_HEADERS = [
+    "en-US,en;q=0.9",
+    "en-GB,en;q=0.8",
+    "en-US,en;q=0.9,fr;q=0.6",
+]
+
+
+@dataclass
+class TrafficProfile:
+    headers: dict[str, str]
+    cookies: dict[str, str]
+    cookie_domain: str
+    trace_id: str
+
+
 @dataclass
 class APIClient:
     base_url: str
     session: requests.Session
+    default_headers: dict[str, str] = field(default_factory=dict)
+    trace_id: str | None = None
     token: str | None = None
 
     def _url(self, path: str) -> str:
@@ -32,8 +61,12 @@ class APIClient:
         return f"{base}{suffix}"
 
     def request(self, method: str, path: str, **kwargs):
-        headers = kwargs.pop("headers", {})
+        headers = {**self.default_headers}
+        headers.update(kwargs.pop("headers", {}))
         headers.setdefault("Accept", "application/json")
+        headers.setdefault("X-Request-ID", uuid4().hex)
+        if self.trace_id:
+            headers.setdefault("X-Correlation-ID", self.trace_id)
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
         response = self.session.request(method, self._url(path), headers=headers, timeout=15, **kwargs)
@@ -101,6 +134,49 @@ def _quantity_override_arg(value: str) -> Tuple[str, int]:
     if quantity < 1:
         raise argparse.ArgumentTypeError("Quantity overrides must be at least 1")
     return key, quantity
+
+
+def _random_ip() -> str:
+    octets = [str(random.randint(11, 240)) for _ in range(4)]
+    return ".".join(octets)
+
+
+def _build_traffic_profile(base_url: str, user_email: str) -> TrafficProfile:
+    parsed = urlparse(base_url)
+    origin = f"{parsed.scheme}://{parsed.netloc or parsed.path}"
+    referer_paths = [
+        "/app",
+        "/app/products",
+        "/app/cart",
+        "/app/checkout",
+    ]
+    device_type = random.choice(["desktop", "mobile"])
+    user_agents = DESKTOP_USER_AGENTS if device_type == "desktop" else MOBILE_USER_AGENTS
+    headers = {
+        "User-Agent": random.choice(user_agents),
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": random.choice(LANGUAGE_HEADERS),
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+        "Connection": "keep-alive",
+        "Origin": origin,
+        "Referer": f"{origin}{random.choice(referer_paths)}",
+        "X-Forwarded-For": _random_ip(),
+        "X-Real-IP": _random_ip(),
+        "X-Device-Id": uuid4().hex,
+        "X-Session-Id": uuid4().hex,
+        "X-Channel": random.choice(["web", "mobile-web", "affiliate", "retargeting"]),
+        "X-Requested-With": "XMLHttpRequest",
+    }
+    cookies = {
+        "session_id": uuid4().hex,
+        "ab_bucket": random.choice(["A", "B"]),
+        "preferred_currency": random.choice(["USD", "EUR", "GBP"]),
+        "remember_email": user_email,
+    }
+    cookie_domain = parsed.hostname or (parsed.netloc.split(":")[0] if ":" in parsed.netloc else parsed.netloc)
+    return TrafficProfile(headers=headers, cookies=cookies, cookie_domain=cookie_domain, trace_id=uuid4().hex)
 
 
 def simulate_user(
@@ -233,7 +309,18 @@ def main(argv: Iterable[str] | None = None) -> int:
         print(f"\nIteration {iteration}/{args.iterations}")
         for user in users:
             session = requests.Session()
-            client = APIClient(base_url=args.base_url, session=session)
+            profile = _build_traffic_profile(args.base_url, user["email"])
+            session.headers.update(
+                {k: v for k, v in profile.headers.items() if k in {"User-Agent", "Accept-Language", "Accept-Encoding"}}
+            )
+            for cookie_name, cookie_value in profile.cookies.items():
+                session.cookies.set(cookie_name, cookie_value, domain=profile.cookie_domain, path="/")
+            client = APIClient(
+                base_url=args.base_url,
+                session=session,
+                default_headers=profile.headers,
+                trace_id=profile.trace_id,
+            )
             try:
                 simulate_user(
                     client,
