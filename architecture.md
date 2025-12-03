@@ -68,6 +68,8 @@ eCommerce-API-demo/
 │       ├── schemas.py
 │       └── seed_data.py
 ├── frontend/
+│   ├── _fs-ch-1T1wmsGaOgGaSxcX/
+│   │   └── challenge.js
 │   ├── app.js
 │   ├── index.html
 │   └── styles.css
