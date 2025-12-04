@@ -20,11 +20,6 @@
     </header>
 
     <main>
-      <section id="security-section" class="card" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-        <h2 style="margin: 0; font-size: 1.2rem;">Security Check</h2>
-        <div class="fastly-challenge"></div>
-      </section>
-
       <section class="auth" id="auth-section">
         <div class="card">
           <h2>Register</h2>
@@ -135,6 +130,10 @@
     <footer>
       <p>Built for race teams and API discovery alike.</p>
       <p class="version-display">Version: <span id="app-version">...</span></p>
+      <div class="security-footer">
+        <p>You have been verified by <span class="fastly-brand">Fastly</span> bot protection</p>
+        <div class="fastly-challenge"></div>
+      </div>
       <div id="message" role="status"></div>
     </footer>
     <script src="app.js" type="module"></script>
