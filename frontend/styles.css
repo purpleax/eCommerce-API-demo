@@ -710,6 +710,10 @@ footer {
 }
 
 /* 🔐 CAPTCHA PROMPTED STATE */
+.fastly-challenge[data-challenge-status="captcha_prompted"] {
+    color: white;
+}
+
 .fastly-challenge[data-challenge-status="captcha_prompted"]::before {
     background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     animation: captchaBounce 0.8s ease both;
