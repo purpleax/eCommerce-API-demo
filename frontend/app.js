@@ -574,8 +574,21 @@ if (adminUsersListEl) {
   });
 }
 
+async function loadSystemInfo() {
+  try {
+    const info = await apiRequest('/system/info');
+    const versionEl = document.getElementById('app-version');
+    if (versionEl && info.version) {
+      versionEl.textContent = info.version;
+    }
+  } catch (error) {
+    console.error('Failed to load system info', error);
+  }
+}
+
 // Bootstrap on load
 (async function bootstrap() {
   await loadProducts();
+  loadSystemInfo();
   await loadProfile();
 })();

@@ -106,6 +106,7 @@ All protected endpoints expect an `Authorization: Bearer <token>` header using t
 
 ## Frontend Notes
 - The static app lives in `frontend/` and is bundled into the FastAPI container via `StaticFiles`.
+- A bot challenge script (`frontend/_fs-ch-1T1wmsGaOgGaSxcX/challenge.js`) is included as a placeholder to resolve loading errors in the frontend. This should be replaced with a proper bot protection solution if needed.
 - Override the API base URL by setting `window.API_BASE_URL` before loading `app.js` (useful when front and API live on different origins).
 - Every UI interaction triggers a documented REST endpoint, making it ideal for API discovery demonstrations.
 
