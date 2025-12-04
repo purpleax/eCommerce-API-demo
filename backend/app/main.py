@@ -16,7 +16,7 @@ from .seed_data import seed
 
 API_PREFIX = "/api/v1"
 
-app = FastAPI(title="API-Driven Commerce Demo", version="1.1.0")
+app = FastAPI(title="API-Driven Commerce Demo", version="1.2.0")
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 

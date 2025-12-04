@@ -20,6 +20,11 @@
     </header>
 
     <main>
+      <section id="security-section" class="card" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+        <h2 style="margin: 0; font-size: 1.2rem;">Security Check</h2>
+        <div class="fastly-challenge"></div>
+      </section>
+
       <section class="auth" id="auth-section">
         <div class="card">
           <h2>Register</h2>
@@ -36,7 +41,6 @@
               Password
               <input type="password" name="password" required minlength="6" />
             </label>
-            <div class="fastly-challenge"></div>
             <button type="submit">Create account</button>
           </form>
         </div>
@@ -51,7 +55,6 @@
               Password
               <input type="password" name="password" required />
             </label>
-            <div class="fastly-challenge"></div>
             <button type="submit">Login</button>
           </form>
         </div>
